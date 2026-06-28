@@ -3,7 +3,13 @@ Level: Expert / MLOps Engineer
 
 ## Phase 1: Architecture and Foundations
 1. 30-Second OverviewModern language models (from LLaMA-3 to Mistral-7B) are based on the Transformer architecture (Decoder-only). The beating heart of the architecture is the Self-Attention mechanism, which allows the model to weigh the importance of each token in relation to all other tokens in the context.
-2. Mathematics: Scaled Dot-Product AttentionThe attention mechanism is defined as:$$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$Where:$Q$ (Queries), $K$ (Keys), $V$ (Values) are matrices obtained by multiplying the input by learned weights.$d_k$ is the dimension of the Key (used for normalization to prevent extreme gradient values in the softmax).The Bottleneck: The $QK^T$ operation requires memory and time complexity of $O(n^2)$ (where $n$ is the sequence length). Therefore, Flash Attention was developed, which computes this equation in blocks (Tiling) on the GPU's fast SRAM.
+2. Mathematics: Scaled Dot-Product AttentionThe attention mechanism is defined as:
+
+$$
+text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$Where:$Q$ (Queries), $K$ (Keys), $V$
+$$
+
+(Values) are matrices obtained by multiplying the input by learned weights.$d_k$ is the dimension of the Key (used for normalization to prevent extreme gradient values in the softmax).The Bottleneck: The $$QK^T$$ operation requires memory and time complexity of $$O(n^2)$$ (where $$n$$ is the sequence length). Therefore, Flash Attention was developed, which computes this equation in blocks (Tiling) on the GPU's fast SRAM.
 3. Implementation Code (PyTorch)Here is a basic implementation of Self-Attention, plus a Causal Mask (so the model doesn't look into the future):
 
 ```python
