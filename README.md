@@ -6,7 +6,7 @@ Level: Expert / MLOps Engineer
 2. Mathematics: Scaled Dot-Product AttentionThe attention mechanism is defined as:
 
 $$
-text{Attention}(Q, K, V) = text{softmax} left(frac{QK^T}{sqrt{d_k}}right)V$$ Where: $$ Q$ (Queries), $K$ (Keys), $V $$
+text{Attention}(Q, K, V) = text{softmax} left(frac{QK^T}{sqrt{d_k}}right)V$$ Where: $$ Q (Queries), $K$ (Keys), V $$
 
 (Values) are matrices obtained by multiplying the input by learned weights.$d_k$ is the dimension of the Key (used for normalization to prevent extreme gradient values in the softmax).The Bottleneck: The $$ QK^T $$ operation requires memory and time complexity of $$ O(n^2) $$ (where $$ n $$ is the sequence length). Therefore, Flash Attention was developed, which computes this equation in blocks (Tiling) on the GPU's fast SRAM.
 3. Implementation Code (PyTorch)Here is a basic implementation of Self-Attention, plus a Causal Mask (so the model doesn't look into the future):
