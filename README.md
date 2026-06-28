@@ -6,10 +6,10 @@ Level: Expert / MLOps Engineer
 2. Mathematics: Scaled Dot-Product AttentionThe attention mechanism is defined as:
 
 $$
-text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$Where:$Q$ (Queries), $K$ (Keys), $V$
+text{Attention}(Q, K, V) = text{softmax} left(frac{QK^T}{sqrt{d_k}}right)V$$Where:$Q$ (Queries), $K$ (Keys), $V$
 $$
 
-(Values) are matrices obtained by multiplying the input by learned weights.$d_k$ is the dimension of the Key (used for normalization to prevent extreme gradient values in the softmax).The Bottleneck: The $$QK^T$$ operation requires memory and time complexity of $$O(n^2)$$ (where $$n$$ is the sequence length). Therefore, Flash Attention was developed, which computes this equation in blocks (Tiling) on the GPU's fast SRAM.
+(Values) are matrices obtained by multiplying the input by learned weights.$d_k$ is the dimension of the Key (used for normalization to prevent extreme gradient values in the softmax).The Bottleneck: The $$ QK^T $$ operation requires memory and time complexity of $$ O(n^2) $$ (where $$ n $$ is the sequence length). Therefore, Flash Attention was developed, which computes this equation in blocks (Tiling) on the GPU's fast SRAM.
 3. Implementation Code (PyTorch)Here is a basic implementation of Self-Attention, plus a Causal Mask (so the model doesn't look into the future):
 
 ```python
@@ -54,13 +54,14 @@ output = attn(x)
 print(f"Output shape: {output.shape}") # (2, 128, 768)
 ```
 
-4. Trade-offs & BenchmarksGQA (Grouped Query Attention) vs. MHA (Multi-Head): LLaMA-3 uses GQA. By sharing heads of $K$ and $V$, we significantly reduce the size of the KV Cache (by 4-8x), at a negligible cost of a drop in Perplexity (less than 1%).Paper to Read: FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness (Dao et al., 2022).
+4. Trade-offs & BenchmarksGQA (Grouped Query Attention) vs. MHA (Multi-Head): LLaMA-3 uses GQA. By sharing heads of $$ K $$ and $$ V $$, we significantly reduce the size of the KV Cache (by 4-8x), at a negligible cost of a drop in Perplexity (less than 1%).Paper to Read: FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness (Dao et al., 2022).
 
 ## Phase 2: Training and Optimization (Training & Fine-Tuning)
 
 1. 30-Second OverviewWe do not train a foundation model from scratch (requires thousands of H100s). We will use an existing model (e.g., Mistral-7B or LLaMA-3.1-8B) and perform Supervised Fine-Tuning (SFT) on it, followed by Alignment using DPO to adapt it to our business task. We will use LoRA to train only a fraction of the weights and avoid Catastrophic Forgetting.
-2. Mathematics: LoRA (Low-Rank Adaptation)Instead of updating the original weight matrix $W \in \mathbb{R}^{d \times k}$, we freeze $W$ and learn a low-rank update:$$ W_{new} = W + \Delta W = W + BA $$
-Where $B \in \mathbb{R}^{d \times r}$ and $A \in \mathbb{R}^{r \times k}$, and the rank $r \ll \min(d,k)$. Usually $r=16$.3. Implementation Code (HuggingFace PEFT)
+2. Mathematics: LoRA (Low-Rank Adaptation)Instead of updating the original weight matrix $$ W in mathbb{R}^{d times k} $$, we freeze $$ W $$ and learn a low-rank update: $$ W_{new} = W + Delta W = W + BA $$
+Where $$ B in mathbb{R}^{d times r} $$ and $$ A in mathbb{R}^{r times k} $$, and the rank $$ r ll min(d,k) $$ . Usually $$ r=16 $$ .
+3. Implementation Code (HuggingFace PEFT)
 
 ```python
 import torch
@@ -97,9 +98,9 @@ peft_model.print_trainable_parameters()
 ## Phase 3: Production Inference Infrastructure (Inference Stack)
 
 1. 30-Second OverviewThe biggest problem running an LLM in Production is not compute power (Compute Bound) but memory bandwidth (Memory Bound). The bottleneck is transferring the weights and the KV Cache from the GPU memory to the processor. The industry solution: vLLM with Continuous Batching and PagedAttention.
-2. Mathematics / Memory Calculation (KV Cache)How much memory does the KV Cache require for a single token in LLaMA-3 8B (in FP16)?$$ \text{Cache Memory} = 2 \times \text{layers} \times \text{kv_heads} \times \text{head_dim} \times \text{bytes} $$$$ = 2 \times 32 \times 8 \times 128 \times 2 = 131,072 \text{ bytes per token} $$
-For a context of 8,000 tokens for one user: $\sim 1 \text{ GB}$.
-For a Batch of 64 users: $\sim 64 \text{ GB}$ is required just for context memory! (beyond the model weights).PagedAttention solves this by dividing memory into virtual contiguous blocks, just like an operating system, reducing memory waste from 50% to 4%.
+2. Mathematics / Memory Calculation (KV Cache)How much memory does the KV Cache require for a single token in LLaMA-3 8B (in FP16)? $$ text{Cache Memory} = 2 times text{layers} times text{kv_heads} times text{head_dim} \times text{bytes} $$$$ = 2 times 32 times 8 times 128 times 2 = 131,072 text{ bytes per token} $$
+For a context of 8,000 tokens for one user: $$ sim 1 text{ GB} $$ .
+For a Batch of 64 users: $$ sim 64 text{ GB} $$ is required just for context memory! (beyond the model weights).PagedAttention solves this by dividing memory into virtual contiguous blocks, just like an operating system, reducing memory waste from 50% to 4%.
 3. Implementation Code (vLLM Engine)# To run this, install vLLM: pip install vllm
 from vllm import LLM, SamplingParams
 
@@ -140,7 +141,7 @@ for output in outputs:
 ## Phase 4: Agent Systems and RAG (Agentic Systems)
 
 1. 30-Second OverviewA "naked" language model is just a statistical engine. To generate business value (Enterprise AI), we wrap it in RAG systems (to gain organizational knowledge it wasn't trained on) and Agentic Workflow patterns (allowing it to use tools, plan, and self-correct).
-2. Mathematics: Vector Search in RAGFinding the most relevant document for a given query is typically done using Cosine Similarity between the query vector $q$ and the document vector $d$:$$ \text{sim}(q, d) = \frac{q \cdot d}{|q| |d|} $$
+2. Mathematics: Vector Search in RAGFinding the most relevant document for a given query is typically done using Cosine Similarity between the query vector $q$ and the document vector $$ d$:$$ \text{sim}(q, d) = \frac{q \cdot d}{|q| |d|} $$
 Where the dimensions usually range from 768 to 3072 (depending on the Embedding model).
 3. Implementation Code (LangGraph Agent with Tools)Building a ReAct (Reasoning and Acting) based agent that uses LangGraph to create a Stateful loop.
 
